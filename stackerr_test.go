@@ -25,7 +25,7 @@ func TestStackerr(t *testing.T) {
 
 	t.Log(string(d))
 
-	c := NewClient("f8d383a38649f0a460b0c11cefc00661")
+	c := NewClient(apiKey)
 
 	if err := c.Notify([]Event{ev}); err != nil {
 		t.Fatal(err)

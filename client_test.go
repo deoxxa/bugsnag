@@ -7,7 +7,7 @@ import (
 func TestClient(t *testing.T) {
 	t.Parallel()
 
-	c := NewClient("f8d383a38649f0a460b0c11cefc00661")
+	c := NewClient(apiKey)
 
 	c.Notify([]Event{
 		{
