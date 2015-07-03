@@ -6,7 +6,7 @@ bugsnag
 Overview
 --------
 
-Package echologrus provides a library for sending data to the bugsnag error
+Package bugsnag provides a library for sending data to the bugsnag error
 reporting service. It differs from the official library by having special
 support for [stackerr](http://github.com/facebookgo/stackerr) and a more
 complete data model.
