@@ -6,4 +6,4 @@
 // its stack traces and send them up as individual exceptions to bugsnag. This
 // shows us every point where `stackerr.Wrap(err)` was called, which can help
 // you trace the path of asynchronous errors through your program.
-package bugsnag
+package bugsnag // import "fknsrs.biz/p/bugsnag"
