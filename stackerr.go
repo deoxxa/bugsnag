@@ -1,4 +1,4 @@
-package bugsnag
+package bugsnag // import "fknsrs.biz/p/bugsnag"
 
 import (
 	"fmt"
