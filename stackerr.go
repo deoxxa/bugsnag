@@ -4,62 +4,49 @@ import (
 	"fmt"
 
 	"github.com/facebookgo/stack"
+	"github.com/facebookgo/stackerr"
 )
 
-// ConvertStackerr converts a stackerr.Error (or anything that looks like one)
-// into an Event that can be submitted to bugsnag. It iterates through the
-// stacks kept in the stackerr object and submits each of them as separate
-// exceptions in order to populate the "caused" area of the bugsnag UI.
-func ConvertStackerr(err error) Event {
-	serr, ok := err.(LikeStackerr)
-	if !ok {
-		return Event{}
+func convertError(err error, current stack.Stack) Event {
+	ev := Event{}
+
+	if serr, ok := err.(*stackerr.Error); ok {
+		err = serr.Underlying()
+		ev.Exceptions = convertMultiStack(serr.MultiStack())
 	}
 
-	ev := Event{
-		Exceptions: convertMultiStack(serr.MultiStack()),
-	}
-
-	ev.Exceptions = append(ev.Exceptions, Exception{
-		ErrorClass: fmt.Sprintf("%T", serr.Underlying()),
-		Message:    serr.Underlying().Error(),
-		Stacktrace: []StackFrame{
-			{
-				File:   "dummy.go",
-				Method: "original_error_site",
-			},
-		},
-	})
+	ev.Exceptions = append([]Exception{Exception{
+		ErrorClass: fmt.Sprintf("%T", err),
+		Message:    err.Error(),
+		Stacktrace: convertStack(current),
+	}}, ev.Exceptions...)
 
 	return ev
 }
 
-// LikeStackerr represents the behaviour that we rely on from a stackerr.Error.
-// It's defined as an interface so that forks of stackerr will (should?) still
-// work.
-type LikeStackerr interface {
-	MultiStack() *stack.Multi
-	Underlying() error
+func convertStack(s stack.Stack) []StackFrame {
+	l := make([]StackFrame, len(s))
+
+	for i, f := range s {
+		l[i] = StackFrame{
+			File:       f.File,
+			LineNumber: f.Line,
+			Method:     f.Name,
+		}
+	}
+
+	return l
 }
 
 func convertMultiStack(m *stack.Multi) []Exception {
-	var l []Exception
+	l := make([]Exception, len(m.Stacks()))
 
-	for _, s := range m.Stacks() {
-		ex := Exception{
+	for i, s := range m.Stacks() {
+		l[(len(l)-1)-i] = Exception{
 			ErrorClass: "*stackerr.Error",
 			Message:    fmt.Sprintf("relayed at line %d of %q", s[0].Line, s[0].File),
+			Stacktrace: convertStack(s),
 		}
-
-		for _, f := range s {
-			ex.Stacktrace = append(ex.Stacktrace, StackFrame{
-				File:       f.File,
-				LineNumber: f.Line,
-				Method:     f.Name,
-			})
-		}
-
-		l = append([]Exception{ex}, l...)
 	}
 
 	return l
