@@ -51,6 +51,10 @@ func (c *Client) Notify(events []Event) error {
 	}
 
 	r, err := http.Post(c.URL, "application/json", bytes.NewReader(d))
+	if err != nil {
+		return err
+	}
+
 	if r.StatusCode != 200 {
 		return fmt.Errorf("invalid status code; expected 200 but got %d", r.StatusCode)
 	}
