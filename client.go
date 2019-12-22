@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/facebookgo/stack"
 )
 
 // Client holds information to include in requests to bugsnag.
@@ -62,6 +60,14 @@ func (c *Client) Notify(events []Event) error {
 	return nil
 }
 
+func (c *Client) Notifications() int {
+	if c == nil {
+		return 0
+	}
+
+	return c.notifications
+}
+
 func (c *Client) ReportPanic() {
 	if e := recover(); e != nil {
 		if err, ok := e.(error); ok {
@@ -80,7 +86,7 @@ func (c *Client) errors(skip int, errs ...error) error {
 	l := make([]Event, len(errs))
 	for i, e := range errs {
 		// we add one to skip because we want to skip errors() as well
-		l[i] = convertError(e, stack.Callers(skip+1))
+		l[i] = convertError(e)
 	}
 
 	return c.Notify(l)

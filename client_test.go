@@ -1,13 +1,14 @@
 package bugsnag
 
 import (
+	"os"
 	"testing"
 )
 
 func TestClient(t *testing.T) {
 	t.Parallel()
 
-	c := NewClient(apiKey)
+	c := NewClient(os.Getenv("BUGSNAG_KEY"))
 
 	c.Notify([]Event{
 		{
